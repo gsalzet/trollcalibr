@@ -19,3 +19,5 @@ VignetteBuilder: knitr
 Depends: 
     R (>= 3.6)
 Encoding: UTF-8
+Suggests: 
+    covr

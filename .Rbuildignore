@@ -1,2 +1,5 @@
 ^.*\.Rproj$
 ^\.Rproj\.user$
+^\.github$
+^codecov\.yml$
+^cran-comments\.md$
