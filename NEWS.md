@@ -1,7 +1,7 @@
-## trollcalibr 0.1.9002
+## trollcalibr 0.0.9002
 
--   Initialise Github action, lintr, covcode & tests
+-   Initialize Github action, lintr, covcode & tests
 
-## trollcalibr 0.1.9001
+## trollcalibr 0.0.9001
 
--   Initialise package and git repository (GitHub)
+-   Initialize package and git repository (GitHub)

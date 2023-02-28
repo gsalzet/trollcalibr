@@ -1,7 +1,6 @@
 Package: trollcalibr
-Type: Package
-Title: Package for (meta-)calibration of the individual-based and spatially-explicit forest growth model TROLL
-Version: 0.1.0
+Title: What the Package Does (One Line, Title Case)
+Version: 0.0.0.9002
 Authors@R: c(
     person("Guillaume", "Salzet", email="guillaume.salzet@inrae.fr", role=c("aut","cre"), comment = c(ORCID = "0000-0003-4548-5673")),
     person("Sylvain", "Schmitt", email="sylvain.m.schmitt@gmail.com", role=c("aut"), comment = c(ORCID = "0000-0001-7759-7106"))
@@ -12,12 +11,14 @@ BugReports: https://github.com/gsalzet/trollcalibr/issues
 Description: Function and code to calibrate the individual-based and spatially-explicit forest growth model TROLL.
 License: GPL-3
 LazyData: TRUE
-import:
-    rcontroll (>=0.1)
-RoxygenNote: 7.2.2
-VignetteBuilder: knitr
+Imports:
+    rcontroll (>= 0.1),
+    magrittr (>= 2.0)
 Depends: 
     R (>= 3.6)
-Encoding: UTF-8
 Suggests: 
-    covr
+    covr,
+    knitr
+Encoding: UTF-8
+Roxygen: list(markdown = TRUE)
+RoxygenNote: 7.2.2
