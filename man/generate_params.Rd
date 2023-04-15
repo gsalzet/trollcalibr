@@ -36,7 +36,7 @@ generate_params(
   fnLidar = NULL,
   covariates = NULL,
   echo = FALSE,
-  minID = NULL,
+  minID = 0L,
   ...
 )
 }

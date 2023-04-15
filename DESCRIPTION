@@ -48,6 +48,7 @@ Collate:
     'TROLLv3_stack.R'
     'trolldae.R'
     'addExp.R'
+    'calibGP.R'
     'computeGP.R'
     'createExp.R'
     'generateParam.R'

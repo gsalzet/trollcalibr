@@ -12,9 +12,10 @@ processSim(
   nyearsSampling,
   cores,
   filesave,
-  nyearsStep = NULL,
+  nyearsStep = 0L,
   nyearsMax = NULL,
-  simOpts = NULL
+  simOpts = NULL,
+  verbose = TRUE
 )
 }
 \arguments{
@@ -38,6 +39,11 @@ if convergence is not reached.}
 
 \item{nyearsMax}{int. Maximum number of year
 to reach convergence.}
+
+\item{simOpts}{list for options about the surrogate modeling procedure.
+(see \code{hetGP::\link[hetGP:mleHetGP]{mleHetGP}} for details)}
+
+\item{verbose}{cat processing infos.}
 }
 \value{
 a trolldae object
@@ -97,5 +103,11 @@ Exp2 <- createExp(id = 2,
  
  DAEwithExp <- addExp(dae = DAEwithParams, setupExp = setupExp12)
  
+ processSim(DAEwithExp,
+ checkConverge = FALSE,
+ inputs = list("exInputs" = NULL),
+ nyearsSampling = 1,
+ cores = 2,
+ filesave = getwd())
 
 }
