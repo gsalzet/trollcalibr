@@ -25,7 +25,7 @@ This is an S4 class to represent TROLL surrogate model.
 
 \item{\code{models}}{list. list of adjusted models.}
 
-\item{\code{models.opts}}{list. list of model specifications.}
+\item{\code{modelsopts}}{list. list of model specifications.}
 
 \item{\code{dae}}{list. summary statitics on design and experiments.}
 

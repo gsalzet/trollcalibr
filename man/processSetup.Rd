@@ -86,14 +86,14 @@ fnExpFrac <- function(x,parameters,...){
    return(x)
    }  
    
-Exp1 <- createExperiment(id = 1, 
+Exp1 <- createExp(id = 1, 
  type = "Inter", deltaT = 1,
  fnExp = fnExpFrac,
  parameters = data.frame("fraction" = 0.5),
  inputs = list())
   
    
-Exp2 <- createExperiment(id = 2, 
+Exp2 <- createExp(id = 2, 
  type = "Summary", 
  fnExp = fnExpSum,
  parameters = data.frame(),

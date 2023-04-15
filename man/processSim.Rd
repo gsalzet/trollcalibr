@@ -7,6 +7,7 @@ a trolldae and experimental setup.}
 \usage{
 processSim(
   dae,
+  inputs,
   checkConverge = TRUE,
   nyearsSampling,
   cores,
@@ -18,6 +19,8 @@ processSim(
 }
 \arguments{
 \item{dae}{trolldae. an initialized trolldae object.}
+
+\item{inputs}{list. Other inputs commons between experiments.}
 
 \item{checkConverge}{bool. Convergence will be check.
 To check convengence, a Gelman and Rubin’s
@@ -57,10 +60,10 @@ paramsBounds <- tibble(parameter = c("CR_a","CR_b","fraction"),
    ),
    type = c("global","global", "experiment"))
    
-DAE <- setupDesign(name = "test",paramsBounds = paramsBounds,ntotalsim = 100,  nreplica = 1,  
-sequential = TRUE,ninitsim = 5)
+DAE <- setupDesign(name = "test",paramsBounds = paramsBounds,ntotalsim = 200,  
+nreplica = 4, sequential = TRUE,ninitsim = 25)
    
-DAEwithParams <- generate_params(DAE, nyearsInit = 600)
+DAEwithParams <- generate_params(DAE, nyearsInit = 2)
 
 fnExpSum <- function(x,...){
    summary <- as.matrix(data.frame("DBH" = mean(x@forest$dbh),
@@ -74,14 +77,14 @@ fnExpFrac <- function(x,parameters,...){
    return(x)
    }  
    
-Exp1 <- createExperiment(id = 1, 
+Exp1 <- createExp(id = 1, 
  type = "Inter", deltaT = 1,
  fnExp = fnExpFrac,
  parameters = data.frame("fraction" = 0.5),
  inputs = list())
   
    
-Exp2 <- createExperiment(id = 2, 
+Exp2 <- createExp(id = 2, 
  type = "Summary", 
  fnExp = fnExpSum,
  parameters = data.frame(),

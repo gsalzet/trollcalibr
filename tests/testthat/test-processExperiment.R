@@ -1,4 +1,4 @@
-test_that("processExperiment", {
+test_that("processExp", {
   suppressWarnings(suppressMessages(library(dplyr)))
   
   fnExpSum <- function(x,...){
@@ -12,7 +12,7 @@ test_that("processExperiment", {
     return(x)
   }  
   
-  Exp1 <- createExperiment(id = 1, 
+  Exp1 <- createExp(id = 1, 
                            type = "Inter",
                            deltaT = 100,
                            fnExp = fnExpFrac,
@@ -20,7 +20,7 @@ test_that("processExperiment", {
                            inputs = list())
   
   
-  Exp2 <- createExperiment(id = 2, 
+  Exp2 <- createExp(id = 2, 
                            type = "Summary", 
                            fnExp = fnExpSum,
                            parameters = data.frame(),
@@ -29,12 +29,12 @@ test_that("processExperiment", {
   simTest <- TROLLv3_sim
   
 
-  expect_error(processExperiment(sim = Exp1,
+  expect_error(processExp(sim = Exp1,
                                  singleExp = Exp1,parameters = data.frame("fraction" = 0.5)),
-               regexp = "'sim' argument of 'processExperiment' must be a trollsim")
+               regexp = "'sim' argument of 'processExp' must be a trollsim")
   
   
-  test1 <- processExperiment(sim = simTest,
+  test1 <- processExp(sim = simTest,
                              singleExp = Exp1,parameters = data.frame("fraction" = 0.5))
   
   expect_s4_class(test1,
@@ -43,7 +43,7 @@ test_that("processExperiment", {
   expect_s4_class(test1@outputs.opts$sim,
                   "trollsim")
     
-  test2 <-  processExperiment(sim = simTest,
+  test2 <-  processExp(sim = simTest,
                     singleExp = Exp2)
   
   expect_true(inherits(test2@outputs.opts$summary, "matrix"))

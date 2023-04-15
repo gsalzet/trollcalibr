@@ -1,4 +1,4 @@
-test_that("generate_params", {
+test_that("generate_param", {
   
   paramsBounds <- tibble(parameter = c("klight","phi","g1","nbs0","CR_a","CR_b","Hmaxcor","habitat"),
                          quantileFn = c(\(x) {qunif(x,0.5,0.95)}, # klight
@@ -11,7 +11,7 @@ test_that("generate_params", {
                                         \(x) {ceiling(qunif(x,0,14))}), #Habitat 
                          type = c("global","global","global","global","global","global","species", "covariate"))
   
-  fnSpecies <- \(x,species,...) {
+  fnSpecies <- function(x,species,...) {
     species_data <- species %>%
       mutate(simulation = paste0(x$IDsim)) %>%
       mutate(s_hmax = s_hmax * x$Hmaxcor) %>% 
@@ -19,7 +19,7 @@ test_that("generate_params", {
     return(species_data)
   }
   
-  trollDAETest <- setupDesign(paramsBounds = paramsBounds,ntotalsim = 10,echo = FALSE)
+  trollDAETest <- setupDesign(paramsBounds = paramsBounds,ntotalsim = 5,echo = FALSE)
   
   expect_error(generate_params(obj = trollDAETest,nyearsInit = 1.5),
                regexp = "'nyearsInit' argument of 'generate_params' must be a integer")
