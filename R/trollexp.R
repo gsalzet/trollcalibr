@@ -3,34 +3,37 @@ NULL
 
 #' An S4 class to represent TROLL experiments.
 #'
-#' This is an S4 class to represent TROLL experiments.
+#' This is an S4 class to represent a single TROLL experiment.
 #'
 #' @slot id int. Experiment identifier.
 #' @slot type char. Type of experiment
 #' ("initialization"/ "intermediate"/ "summarize").
 #' @slot func func. experiment function to apply.
-#' @slot parameters char. list of used parameters.
-#' @slot inputs list. List of inputs objects.
-#' @slot outputs list. List of outputs objects.
+#' @slot deltat int. Number of year to process after experiment.
+#' @slot parameters d.f. vector of used parameters.
+#' @slot inputs.opts list. List of inputs objects.
+#' @slot outputs.opts list. List of outputs objects.
 #'
 #' @export
 setClass(
-  "trollexp",
+  "trollexpsingle",
   representation(id = "integer",
                  type = "character",
                  func = "function",
-                 parameters = "character",
-                 inputs = "list",
-                 outputs = "list"
+                 deltat = "integer",
+                 parameters = "data.frame",
+                 inputs.opts = "list",
+                 outputs.opts = "list"
   ),
   prototype(id = integer(),
             type = character(),
             func = function(x) {
               x
             },
-            parameters = character(),
-            inputs = list(),
-            outputs = list())
+            deltat = integer(),
+            parameters = data.frame(),
+            inputs.opts = list(),
+            outputs.opts = list())
 )
 
 #' An S4 class to represent TROLL design and the experiments.
@@ -38,28 +41,31 @@ setClass(
 #' This is an S4 class to represent TROLL design and the experiments.
 #'
 #' @param id int. Experiment identifier.
-#' @param type char. Type of experiment.
+#' @param type char. Type of experiment
 #' ("initialization"/ "intermediate"/ "summarize").
-#' @param func func. experiment function to appy on trollsim/ trollstack
-#' @param parameters char. list of used parameters
-#' @param inputs list. List of inputs objects used in experiments
-#' @param outputs list. List of outputs objects used in other simulations
+#' @param func func. experiment function to apply.
+#' @param deltat int. Number of year to process after experiment.
+#' @param parameters d.f. vector of used parameters.
+#' @param inputs.opts list. List of inputs objects.
+#' @param outputs.opts list. List of outputs objects.s
 #'
 #' @export
-#' @rdname trollexp
-trollexp <- function(id = integer(),
+#' @rdname trollexpsingle
+trollexpsingle <- function(id = integer(),
                      type = character(),
                      func = function(x) {
                        x
                      },
-                     parameters = character(),
-                     inputs = list(),
-                     outputs = list()) {
-  return(new("trollexp",
+                     deltat = integer(),
+                     parameters = data.frame(),
+                     inputs.opts = list(),
+                     outputs.opts = list()) {
+  return(new("trollexpsingle",
              id = id,
              type = type,
              func = func,
+             deltat = deltat,
              parameters = parameters,
-             inputs = inputs,
-             outputs = outputs))
+             inputs.opts = inputs.opts,
+             outputs.opts = outputs.opts))
 }

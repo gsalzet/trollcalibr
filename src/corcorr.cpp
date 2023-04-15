@@ -22,10 +22,8 @@ arma::mat sw (arma::mat obj, int i, int j, int k) {
 //'
 //' @name corcorr
 //'
-//' @param vars dbl. WIP LHS matrix.
-//' @param cor dbl. Correlation matrix.
-//' @param N int. Number of lines.
-//' @param M int. Number of columns.
+//' @param vars mat. WIP LHS matrix.
+//' @param cor mat. Correlation matrix.
 //' @param l int. Convergence tolerance.
 //' @param FLAGSTOP int. Flag to check convergence .
 //'
@@ -66,15 +64,16 @@ Rcpp::List  corcorr(arma::mat vars, arma::mat cor,int l, int FLAGSTOP) {
     minE += (Tj/(N) - cor(l-1,m))*(Tj/(N) - cor(l-1,m));
   }
   
-  for (i =0; i < N-1; i++) 
+  for (i =0; i < N-1; i++) {
     for (j = i+1; j < N; j++) {
       E =0;
       /* Troca o valor de R[i] e R[j] */
       tmp = sw(tmp, i, j, (l-1));
       for (m=0; m < l-1;m++) {
         Tj = 0;
-        for (k=0;k<N;k++)
+        for (k=0;k<N;k++) {
           Tj += tmp(k ,l-1) * tmp(k,m);
+        }
         E += (Tj/(N) - cor(l-1,m))*(Tj/(N) - cor(l-1,m));
       }
       /* trabalha com E aqui */
@@ -87,13 +86,15 @@ Rcpp::List  corcorr(arma::mat vars, arma::mat cor,int l, int FLAGSTOP) {
       tmp = sw(tmp, i, j, (l-1));
       
     }
+  }
     
-    if (mini == 0 && minj == 0) {
-      FLAGSTOP = 1;
-    } else {
-      /* Troca o valor da variavel na posicao i e j e finaliza */
-      vars = sw(vars, mini, minj, (l-1));
-    }
+  if (mini == 0 && minj == 0) {
+    FLAGSTOP = 1;
+  } else {
+    /* Troca o valor da variavel na posicao i e j e finaliza */
+    vars = sw(vars, mini, minj, (l-1));
+  }
+  
     
     return Rcpp::List::create(Rcpp::Named("vars")=vars,
                               Rcpp::Named("FLAGSTOP")=FLAGSTOP);

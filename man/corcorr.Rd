@@ -7,17 +7,13 @@
 corcorr(vars, cor, l, FLAGSTOP)
 }
 \arguments{
-\item{vars}{dbl. WIP LHS matrix.}
+\item{vars}{mat. WIP LHS matrix.}
 
-\item{cor}{dbl. Correlation matrix.}
+\item{cor}{mat. Correlation matrix.}
 
 \item{l}{int. Convergence tolerance.}
 
 \item{FLAGSTOP}{int. Flag to check convergence .}
-
-\item{N}{int. Number of lines.}
-
-\item{M}{int. Number of columns.}
 }
 \value{
 Void with outputs files written in the defined folder.

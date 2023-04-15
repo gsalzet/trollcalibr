@@ -4,6 +4,7 @@
 
 # Session Data files
 .RData
+/vignettes/*
 
 # User-specific files
 .Ruserdata

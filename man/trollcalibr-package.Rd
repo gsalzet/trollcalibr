@@ -4,9 +4,9 @@
 \name{trollcalibr-package}
 \alias{trollcalibr}
 \alias{trollcalibr-package}
-\title{trollcalibr: What the Package Does (One Line, Title Case)}
+\title{trollcalibr: A package for (meta-)calibration of the individual-based and spatially-explicit forest growth model TROLL}
 \description{
-Function and code to calibrate the individual-based and spatially-explicit forest growth model TROLL.
+trollcalibr integrates the rcontroll package and provides a rigorous framework to design in silico experiments. trollcalibr can be used with user-friendly functions to set up, analyse, decompose sensitivity and calibrate the TROLL forest simulator. The TROLL simulator relies on a complex system of equations coded in C++ to efficiently simulate hundreds of individuals over hundreds of years. In contrast, the trollcalibr package relies on a few functions in R to generate and provide inputs, prepare and run the simulations, and analyse the simulations through tables, figures, and maps that are easily connected to the rest of the R package ecosystem.
 }
 \seealso{
 Useful links:
@@ -23,6 +23,7 @@ Useful links:
 Authors:
 \itemize{
   \item Sylvain Schmitt \email{sylvain.m.schmitt@gmail.com} (\href{https://orcid.org/0000-0001-7759-7106}{ORCID})
+  \item Mélaine Aubry-Kientz \email{melaine.aubry.kientz@gmail.com} (\href{https://orcid.org/0000-0002-4439-8626}{ORCID})
 }
 
 }

@@ -10,10 +10,8 @@
 #'
 #' @name corcorr
 #'
-#' @param vars dbl. WIP LHS matrix.
-#' @param cor dbl. Correlation matrix.
-#' @param N int. Number of lines.
-#' @param M int. Number of columns.
+#' @param vars mat. WIP LHS matrix.
+#' @param cor mat. Correlation matrix.
 #' @param l int. Convergence tolerance.
 #' @param FLAGSTOP int. Flag to check convergence .
 #'

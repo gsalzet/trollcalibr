@@ -1,3 +1,7 @@
+#' @importFrom SLHD maximinSLHD
+#' @importFrom Rcpp sourceCpp
+NULL
+
 #' Correlation matrix Correction
 #'
 #' Corrects the correlation matrix of a given Latin Hypercube Sample.
@@ -6,11 +10,9 @@
 #' to force the correlation matrix to a prescribed value. This implementation
 #' uses the Hungtington-Lyrintzis algorithm.
 #'
-#' @param vars df./ mat. "raw" Latin Hypercube Sample.
+#' @param vars df. mat. "raw" Latin Hypercube Sample.
 #'
-#' @param cormat mat. Correlation matrix.
-#' @param method char. correlation method ("Spearman" or "Pearson")
-#'
+#' @param cormat mat. A Pearson correlation matrix.
 #' @param eps num. Tolerance deviation.
 #' @param echo bool. Verbose.
 #' @param maxit int. maximum number of iterations.
@@ -18,40 +20,33 @@
 #'
 #' @return df. the correlation matrix corrected.
 #'
+#' @references
+#'
+#'  Chalom, A. and Prado, P.I.K.L. 2012. Parameter space exploration of ecological models
+#'  \emph{arXiv}:1210.6278
+#'
 #' @useDynLib trollcalibr
-#' @importFrom Rcpp sourceCpp
+#' 
 #' @export
 #'
 #' @examples
-#' library(lhs)
-#' uncorlhs <- randomLHS(100,2)
+#' require(SLHD)
+#' uncorlhs <- maximinSLHD(t = 1,m = 100,k = 2)$StandDesign
 #' corm <- matrix(c(1,0.5,0.5,1),2,2)
-#' lhscorcorr(vars = uncorlhs,cormat = corm,"Spearman")
+#' .lhscorcorr(vars = uncorlhs,cormat = corm)
+#' .lhscorcorr(vars = uncorlhs,cormat = corm,maxit = 1E10)
 #'
-lhscorcorr <- function(vars,
+.lhscorcorr <- function(vars,
                        cormat = 0,
-                       method = c("Pearson", "Spearman"),
                        eps = 0.005,
                        echo = FALSE,
                        maxit = 0) {
-  method <- match.arg(method)
-  if (! is.matrix(cormat)) {
-    cormat <- matrix(0, dim(vars)[2], dim(vars)[2])
-  }
   if (maxit == 0) {
     maxit <- 2 * sqrt(dim(vars)[1])
   }
-  if (method == "Pearson") {
     # Simply proceeds with the calculation
     return(.matcorcorr(vars, cormat, 2, eps, 1, echo, maxit))
-  } else { #"Rank" transforms the data,
-    # calculates the new arrangement, then transforms back
-    rvars <- .matcorcorr(rvars, cormat, 2, eps, 1, echo, maxit)
-    for (i in 1:(dim(vars)[2])){
-      vars[, i] <- vars[rvars[, i], i]
-    }
-    return(vars)
-  }
+
 }
 
 .matcorcorr <- function(vars, cormat, l, eps, it, echo, maxit) {

@@ -5,5 +5,7 @@
 #' @importFrom tibble tibble
 #' @importFrom stats cor
 #' @importFrom Rcpp evalCpp
+#' @import RcppArmadillo
+#' @import rcontroll
 ## usethis namespace: end
 NULL
