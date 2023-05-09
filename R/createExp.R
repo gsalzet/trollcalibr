@@ -119,6 +119,7 @@ createExp <- function(id,
   
   # Global variables
   test <-  outputs <- NULL
+  data(TROLLv3_sim,envir = environment())
   
   
   

@@ -3,9 +3,12 @@ test_that("createExp", {
   suppressWarnings(suppressMessages(library(dplyr)))
   fnExp1 <- function(x,...){}
   fnExp2 <- function(x,...){return(list())}
-  fnExp1t <- function(x,...){x@forest <- x@forest %>% filter(dbh < 0.5)
+  fnExp1t <- function(x,...){
+    library(dplyr)
+    x@forest <- x@forest %>% filter(dbh < 0.5)
   list(x)}
   fnExp2t <- function(x,...){
+    library(dplyr)
     x@forest <-  x@forest %>% sample_frac(0.5)
   return(x)
     }

@@ -1,4 +1,4 @@
-#'
+#' @importFrom dplyr mutate row_number
 NULL
 
 #' Create a sequence of experiments to process on TROLL simulations.
@@ -41,14 +41,14 @@ NULL
 #'  type = "Inter", deltaT = 100,
 #'  fnExp = fnExpFrac,
 #'  parameters = data.frame("fraction" = 0.5),
-#'  inputs = data.frame())
+#'  inputs = list())
 #'   
 #'    
 #' Exp2 <- createExp(id = 2, 
 #'  type = "Summary", 
 #'  fnExp = fnExpSum,
 #'  parameters = data.frame(),
-#'  inputs = data.frame())
+#'  inputs = list())
 #'  
 #'  setupExperiments(dae = DAEwithParams,
 #'  listexp = list(Exp1,Exp2),
@@ -87,6 +87,9 @@ setupExperiments <- function(
   finalSummaryExp <- NULL
   params <- type <- NULL
   outputs <- parameter <- NULL
+
+  
+  data(TROLLv3_sim,envir = environment())
   
   # Arguments validity check
   
@@ -139,7 +142,7 @@ setupExperiments <- function(
         if (length(ExpI@outputs.opts) > 1) {
           Otheroutputs <- ExpI@outputs.opts[[2:length(ExpI@outputs.opts)]]
         }
-        finalSummary <- outputs$summary
+        finalSummary <- ExpI@outputs.opts$summary
       }
     }
     
@@ -148,7 +151,7 @@ setupExperiments <- function(
   params <- dae@params %>% 
     select(c("IDsim",(dae@boundaries %>% 
               filter(type %in% c("experiment","covariable")) %>% 
-              select(parameter))$parameter))
+              select(parameter))$parameter)) %>% mutate(ID = row_number())
   
   paramsTest <- params[1,]
   
@@ -182,7 +185,7 @@ setupExperiments <- function(
                        listexp = c(initExp,listexp),
                        deltat = as.integer(deltaTAll),
                        inputs.opts = inputs,
-                       outputs.opts = list("Summary" = finalSummary,
+                       outputs.opts = list("summary" = finalSummary,
                                            "otherOutputs" = outputs))
   )
   }

@@ -39,6 +39,8 @@ processSetup(
 \arguments{
 \item{sim}{trollsim.}
 
+\item{setup}{trollexpsetup}
+
 \item{inputs}{list.}
 
 \item{saveInter}{save intermediate results}
@@ -47,7 +49,7 @@ processSetup(
 
 \item{cores}{number of cores to use}
 
-\item{setupExp}{trollexpsetup}
+\item{...}{Unused parameters}
 }
 \value{
 an executed trollexpsetup.

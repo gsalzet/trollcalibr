@@ -9,8 +9,10 @@ surcalib(
   yobs = data.frame(),
   xobs = data.frame(),
   xcalib = data.frame(),
-  params.formulas = list(),
-  cov.formulas = data.frame(),
+  ycalib = data.frame(),
+  paramCalib = data.frame(),
+  paramsFormulas = list(),
+  covFormulas = data.frame(),
   surmodel = list(),
   calib.opts = list()
 )
@@ -22,9 +24,13 @@ surcalib(
 
 \item{xcalib}{d.f. Available variable on the whole studied setup.}
 
-\item{params.formulas}{list. list of equations linking estimated parameters.}
+\item{ycalib}{d.f. Estimated summary statitics on the whole studied setup.}
 
-\item{cov.formulas}{d.f. Available covariable for 'params.formulas'
+\item{paramCalib}{d.f Estimated parameters values on the whole studied setup.}
+
+\item{paramsFormulas}{list. list of equations linking estimated parameters.}
+
+\item{covFormulas}{d.f. Available covariable for 'paramCalib'
 on the whole studied setup.}
 
 \item{surmodel}{list. an adjusted TROLL surrogate model.}

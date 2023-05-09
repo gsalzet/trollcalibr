@@ -18,9 +18,13 @@ This is an S4 class to represent TROLL surrogated calibration.
 
 \item{\code{xcalib}}{d.f. Available variable on the whole studied setup.}
 
-\item{\code{params.formulas}}{list. list of equations linking estimated parameters.}
+\item{\code{ycalib}}{d.f. Estimated summary statitics on the whole studied setup.}
 
-\item{\code{cov.formulas}}{d.f. Available covariable for 'params.formulas'
+\item{\code{paramCalib}}{d.f Estimated parameters values on the whole studied setup.}
+
+\item{\code{paramsFormulas}}{list. list of equations linking estimated parameters.}
+
+\item{\code{covFormulas}}{d.f. Available covariable for 'paramCalib'
 on the whole studied setup.}
 
 \item{\code{surmodel}}{list. an adjusted TROLL surrogate model.}

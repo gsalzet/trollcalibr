@@ -11,7 +11,8 @@ processSim(
   checkConverge = TRUE,
   nyearsSampling,
   cores,
-  filesave,
+  filesave = NULL,
+  targets = NULL,
   nyearsStep = 0L,
   nyearsMax = NULL,
   simOpts = NULL,
@@ -34,6 +35,8 @@ convergence at the tail of simulation.}
 
 \item{filesave}{chr. Path to save dae in processing.}
 
+\item{targets}{list.}
+
 \item{nyearsStep}{int. Number of year to add
 if convergence is not reached.}
 
@@ -41,7 +44,8 @@ if convergence is not reached.}
 to reach convergence.}
 
 \item{simOpts}{list for options about the surrogate modeling procedure.
-(see \code{hetGP::\link[hetGP:mleHetGP]{mleHetGP}} for details)}
+(see \code{\link[trollcalibr:computeGP]{computeGP}} and
+\code{\link[trollcalibr:computeHM]{computeHM}} for details)}
 
 \item{verbose}{cat processing infos.}
 }
@@ -53,7 +57,7 @@ A function to process simulation according to
 a trolldae and experimental setup.
 }
 \examples{
-
+\dontrun{
  set.seed(123)
  require(tibble)
  require(dplyr)
@@ -67,7 +71,7 @@ paramsBounds <- tibble(parameter = c("CR_a","CR_b","fraction"),
    type = c("global","global", "experiment"))
    
 DAE <- setupDesign(name = "test",paramsBounds = paramsBounds,ntotalsim = 200,  
-nreplica = 4, sequential = TRUE,ninitsim = 25)
+nreplica = 4, sequential = TRUE,ninitsim = 50)
    
 DAEwithParams <- generate_params(DAE, nyearsInit = 2)
 
@@ -105,9 +109,10 @@ Exp2 <- createExp(id = 2,
  
  processSim(DAEwithExp,
  checkConverge = FALSE,
- inputs = list("exInputs" = NULL),
+ inputs = list("exInputs" = NULL), 
  nyearsSampling = 1,
  cores = 2,
  filesave = getwd())
+ }
 
 }

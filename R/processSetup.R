@@ -8,11 +8,12 @@ NULL
 #' Function to process an a trollexpsetup on a trollsim
 #'
 #' @param sim trollsim.
-#' @param setupExp trollexpsetup
+#' @param setup trollexpsetup
 #' @param inputs list.
 #' @param saveInter save intermediate results
 #' @param parameters d.f.
 #' @param cores number of cores to use
+#' @param ... Unused parameters
 #'
 #' @return an executed trollexpsetup.
 #' 
@@ -113,7 +114,7 @@ setMethod("processSetup",c(sim = "trollsim"), function(sim,
     if (!inherits(parameters, c("data.frame"))) {
       stop("'parameters' argument of 'processSetup' must be a data.frame")
     }
-    if (dim(parameters)[1] > 1 ||  !all(colnames(setup@params %>% select(-"IDsim"))  %in% colnames(parameters)) ) {
+    if (dim(parameters)[1] > 1 ||  !all(colnames(setup@params %>% select(-c("IDsim","ID")))  %in% colnames(parameters)) ) {
       stop(paste0("'parameters' argument of 'processSetup' must be one row data.frame with column(s): ", 
                   colnames(setup@params %>% select(-"IDsim"))))
     }

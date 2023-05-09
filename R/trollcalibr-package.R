@@ -7,5 +7,6 @@
 #' @importFrom Rcpp evalCpp
 #' @import RcppArmadillo
 #' @import rcontroll
+#' @importFrom utils data
 ## usethis namespace: end
 NULL

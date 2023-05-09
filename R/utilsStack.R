@@ -1,3 +1,4 @@
+#' @include TROLLv3_sim.R
 #' @import methods
 #' @importClassesFrom rcontroll trollsim trollstack
 #' @importFrom tidyr nest
@@ -35,7 +36,7 @@ setMethod("splitStack", "trollstack", function(stack,
   # Global variables
   simulation <- forests <- ecosystem <- species <- NULL
   lasI <- pathStack <- ysim <- listSim <- idLas <- NULL
-  inputs <- IDsimi <- parameters <- NULL
+  inputs <- IDsimi <- parameters <- forestSim <- NULL
   speciestSim <- ecosystemSim <- sim_stack <- NULL
   
   

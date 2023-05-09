@@ -2,16 +2,18 @@
 % Please edit documentation in R/calibGP.R
 \name{calibGP}
 \alias{calibGP}
-\title{An S4 class to represent TROLL surrogated calibration.
+\title{A function to process calibration using a completed DAE.
 This is an S4 class to represent TROLL surrogated calibration.}
 \usage{
 calibGP(
   yobs,
   xobs,
   xcalib,
-  params.formulas,
-  cov.formulas,
+  paramsFormulas,
+  covFormulas,
   surmodel,
+  ncores,
+  verbose = TRUE,
   calib.opts = NULL
 )
 }
@@ -22,16 +24,18 @@ calibGP(
 
 \item{xcalib}{d.f. Available variable on the whole studied setup.}
 
+\item{surmodel}{list. an adjusted TROLL surrogate model.}
+
+\item{ncores}{int. number of core to use.}
+
+\item{calib.opts}{list. Calibrations options.}
+
 \item{params.formulas}{list. list of equations linking estimated parameters.}
 
 \item{cov.formulas}{d.f. Available covariable for 'params.formulas'
 on the whole studied setup.}
-
-\item{surmodel}{list. an adjusted TROLL surrogate model.}
-
-\item{calib.opts}{list. Calibrations options.}
 }
 \description{
-An S4 class to represent TROLL surrogated calibration.
+A function to process calibration using a completed DAE.
 This is an S4 class to represent TROLL surrogated calibration.
 }

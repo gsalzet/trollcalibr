@@ -110,6 +110,6 @@ fnSpecies <- \(x,species,...) {
 trollDAETest <- setupDesign(paramsBounds = paramsBounds,
 ntotalsim = 10,echo = FALSE)
 
-generate_params(obj = trollDAETest,nyearsInit = 600)
+generate_params(obj = trollDAETest,nyearsInit = 600, fnSpecies = fnSpecies)
 
 }

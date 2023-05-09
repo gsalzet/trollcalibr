@@ -19,6 +19,8 @@ NULL
 #'
 #' @examples
 #' 
+#' 
+#' 
 computeGP <- function(dae,
                       lower = NULL,
                       upper = NULL,
@@ -33,7 +35,11 @@ computeGP <- function(dae,
     stop("'dae' argument of 'computeGP' must be a trolldae")
   }
   
-  if (dae@state %in% c("In-processing","Post-simulation")) {
+  if (!is(inmem,"logical")) {
+    stop("'inmem' argument of 'computeGP' must be a logical")
+  }
+  
+  if (!(dae@state %in% c("In-processing","Post-simulation"))) {
     stop("'dae' argument of 'computeGP' must be a trolldae")
   }
   
@@ -48,6 +54,13 @@ computeGP <- function(dae,
   dimLhs <- dim(lhs)[2]
   dimY <- dim(ysim)[2]
   
+  if (!is.null(dae@simopts$settingsGP)) {
+    lower <- dae@simopts$settingsGP$lower
+    upper <- dae@simopts$settingsGP$upper
+    covtype <- dae@simopts$settingsGP$covtype
+    noiseControl <- dae@simopts$settingsGP$noiseControl
+    settings <- dae@simopts$settingsGP$settings
+  }
   
   if (is.null(lower)) {
     lower <- rep(0.01, dimLhs)
@@ -97,7 +110,8 @@ computeGP <- function(dae,
   
   prdata <- lapply(1:dimY,function(x){find_reps(lhs,ysim[,x], rescale = FALSE, normalize = FALSE)})
   
-  het <- lapply(prdata, function(x){.hetGP(x,lower,upper,covtype,noiseControl,settings)})
+  het <- setNames(lapply(prdata, function(x){.hetGP(x,lower,upper,covtype,noiseControl,settings)}),colnames(dae@ysim))
+
  
   return(surmodel(type = "GP",
            lhs = dae@lhs,

@@ -16,8 +16,7 @@ setupDesign(
   corrmat = NULL,
   echo = FALSE,
   maxit = NULL,
-  dimPlot = list(xdim = 250L, ydim = 250L),
-  weightIMPSE = 10
+  dimPlot = list(xdim = 250L, ydim = 250L)
 )
 }
 \arguments{

@@ -1,4 +1,4 @@
-#' @importFrom dplyr left_join mutate row_number select filter if_else
+#' @importFrom dplyr left_join mutate row_number select filter if_else arrange
 #' @importFrom SLHD maximinSLHD
 #' @importFrom ulid generate
 #' @importFrom tibble tibble
@@ -101,8 +101,8 @@ setupDesign <- function(name = NULL,
                         echo = FALSE,
                         maxit = NULL,
                         dimPlot = list("xdim" = 250L,
-                                       "ydim" = 250L),
-                        weightIMPSE = 10) {
+                                       "ydim" = 250L)
+                        ) {
   
   # Arguments check
   
@@ -146,7 +146,7 @@ setupDesign <- function(name = NULL,
   # Global variables
   type <- nsim <- nparam <- X <- NULL
   default_forest <- default_paramsBounds <- NULL
-  forestID <- NULL
+  forestID <- parameter <- NULL
   # Arguments validity check
   
   if (!is.null(forestInit)) {
@@ -205,11 +205,14 @@ setupDesign <- function(name = NULL,
   
   if (sequential && !is.null(ninitsim)) {
     nsim <-  ninitsim
-    type <-  "GP"
+    type <-  c("HM", "GP","RAW")
   }else{
     nsim <- ntotalsim
     type <- "RAW"
   }
+  
+  
+  paramsBounds <- paramsBounds %>%  arrange(type,parameter)
   
   namesparams <- paramsBounds$parameter
   
@@ -222,6 +225,10 @@ setupDesign <- function(name = NULL,
   
   if(is.null(maxit)){
     maxit <- 0
+  }
+  
+  if (nsim < 10*nparam) {
+    message("'ninitsim' argument of 'setupDesign' is not >= 10*Parameters.")
   }
   
   if (is.null(corrmat) & 

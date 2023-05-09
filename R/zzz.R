@@ -1,4 +1,5 @@
 #' @importFrom rcontroll TROLL.version
+#' @importFrom utils data
 NULL
 
 #' Options
@@ -17,6 +18,8 @@ NULL
     trollcalibr.tmp = tmp_dir,
     trollcalibr.troll = TROLL.version()
   ))
+  data("TROLLv3_sim", "TROLLv3_stack",
+       package=pkgname, envir=parent.env(environment()))
   invisible()
 }
 

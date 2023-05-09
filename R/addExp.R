@@ -35,22 +35,23 @@ NULL
 #'    }
 #'    
 #' fnExpFrac <- function(x,parameters,...){
+#'     library(dplyr)
 #'    x@forest <-  x@forest %>% sample_frac(parameters$fraction) 
 #'    return(x)
 #'    }  
 #'    
 #' Exp1 <- createExp(id = 1, 
-#'  type = "Inter", deltaT = 100,
+#'  type = "Inter", deltaT = 1,
 #'  fnExp = fnExpFrac,
 #'  parameters = data.frame("fraction" = 0.5),
-#'  inputs = data.frame())
+#'  inputs = list())
 #'   
 #'    
 #' Exp2 <- createExp(id = 2, 
 #'  type = "Summary", 
 #'  fnExp = fnExpSum,
 #'  parameters = data.frame(),
-#'  inputs = data.frame())
+#'  inputs = list())
 #'  
 #'  setupExp12 <- setupExperiments(dae = DAEwithParams,
 #'  listexp = list(Exp1,Exp2),
@@ -74,7 +75,11 @@ setMethod("addExp", "trolldae",function(dae,setupExp,...){
   
   # Arguments check
   if(!inherits(dae, "trolldae")) {
-    stop("The 'dae' argument of the 'generate_params' function must be a trolldae object")
+    stop("The 'dae' argument of the 'addExp' function must be a trolldae object")
+  }
+  
+  if(length(dae@experiments) > 0) {
+    stop("The 'experiments' slor of 'dae' argument of the 'addExp' function is already initialized")
   }
   
   if(!inherits(setupExp, "trollexpsetup")){
@@ -83,6 +88,8 @@ setMethod("addExp", "trolldae",function(dae,setupExp,...){
   
   type <- parameter <- NULL
   
+  data(TROLLv3_sim,envir = environment())
+  
   test <- TROLLv3_sim
   
   tmpExp <- NULL
@@ -90,7 +97,7 @@ setMethod("addExp", "trolldae",function(dae,setupExp,...){
   params <- dae@params %>% 
     select(c("IDsim",(dae@boundaries %>% 
                         filter(type %in% c("experiment","covariable")) %>% 
-                        select(parameter))$parameter))
+                        select(parameter))$parameter)) %>% mutate(ID = row_number()) 
   
   paramsTest <- params[1,]
   
@@ -104,34 +111,35 @@ setMethod("addExp", "trolldae",function(dae,setupExp,...){
   for (ExpI in listexp) {
     
     if (is.null(tmpExp)) {
-      tmpExp <-processExp(sim = test,
-                                 singleExp = ExpI,
-                                 parameters = paramsTest,inputs = inputs)
+      tmpExp <- processExp(sim = test,
+                           singleExp = ExpI,
+                           parameters = paramsTest,
+                           inputs = inputs)
       
       outputs <- tmpExp@outputs.opts
     }else{
       
       tmpExp <-processExp(sim = outputs$sim,
-                                 singleExp = ExpI,
-                                 parameters = paramsTest,
-                                 inputs = append(inputs, outputs))
+                          singleExp = ExpI,
+                          parameters = paramsTest,
+                          inputs = append(inputs, outputs))
       outputs <- append(outputs,tmpExp@outputs.opts)
-     
+      
     }
     deltaTAll <- deltaTAll + ExpI@deltat
     
-    if (ExpI@type == "Summary" ) {
+    if (ExpI@type == "Summary") {
       finalSummary <- outputs$summary
     }
     
   }
   
   TestSetup <- trollexpsetup(params = params,
-                listexp = listexp,
-                deltat = as.integer(deltaTAll),
-                inputs.opts = inputs,
-                outputs.opts = list("Summary" = finalSummary,
-                                    "otherOutputs" = outputs))
+                             listexp = listexp,
+                             deltat = as.integer(deltaTAll),
+                             inputs.opts = inputs,
+                             outputs.opts = list("summary" = finalSummary,
+                                                 "otherOutputs" = outputs))
   
   if(!all(identical(TestSetup@params,setupExp@params),
           identical(TestSetup@listexp,setupExp@listexp),

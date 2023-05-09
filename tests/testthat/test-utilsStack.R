@@ -2,7 +2,7 @@ test_that("utilsStack", {
   
   suppressWarnings(suppressMessages(library(rcontroll)))
   
-  data("TROLLv3_stack")
+  data("TROLLv3_stack",envir = environment())
   
   listSim <- splitStack(TROLLv3_stack)
   
