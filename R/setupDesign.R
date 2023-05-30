@@ -216,13 +216,8 @@ setupDesign <- function(name = NULL,
   
   namesparams <- paramsBounds$parameter
   
-  if (any(namesparams %in% "falloccanopy")  & 
-      any(namesparams %in% "fallocwood"))  {
-    nparam <- dim(paramsBounds)[1] + 1
-  }else{
-    nparam <- dim(paramsBounds)[1]
-  }
-  
+  nparam <- dim(paramsBounds)[1]
+
   if(is.null(maxit)){
     maxit <- 0
   }
@@ -242,7 +237,11 @@ setupDesign <- function(name = NULL,
     corrmat[which(paramsBounds$parameter == "CR_b"),
             which(paramsBounds$parameter == "CR_a")] <- 0.65
   }else{
-    corrmat <- diag(nparam)
+    
+    if (is.null(corrmat)) {
+      corrmat <- diag(nparam)
+    }
+   
   }
   
   if (echo) {
@@ -260,8 +259,10 @@ setupDesign <- function(name = NULL,
       corrmat <- cbind(c(1,rep(0,nparam)),rbind(rep(0,nparam),corrmat))
       X <- .lhscorcorr(X,cormat = corrmat,eps = 0.001*sqrt(nsim), echo = echo,maxit = 1E10)
       nparam <- nparam +1
+    }else{
+      X <-.lhscorcorr(X,cormat = corrmat,eps = 0.001*sqrt(nsim), echo = echo,maxit = 1E10)
     }
-    X <-.lhscorcorr(X,cormat = corrmat,eps = 0.001*sqrt(nsim), echo = echo,maxit = 1E10)
+    
   }
   
   X <- rbind(as.matrix(X), matrix(rep(t(X), max(nreplica -1, 0) ), ncol= nparam , byrow=TRUE))

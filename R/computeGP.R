@@ -16,10 +16,6 @@ NULL
 #'
 #' @return a surmodel object.
 #' @export
-#'
-#' @examples
-#' 
-#' 
 #' 
 computeGP <- function(dae,
                       lower = NULL,

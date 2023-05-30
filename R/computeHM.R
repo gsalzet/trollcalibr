@@ -16,10 +16,6 @@ NULL
 #'
 #' @return a surmodel object.
 #' @export
-#'
-#' @examples
-#' 
-#' 
 #' 
 computeHM <- function(dae,
                       targets,
@@ -72,10 +68,10 @@ computeHM <- function(dae,
                     dae@boundaries[x,]$quantileFn[[1]](1))),
              nm = dae@boundaries[x,"parameter"])}))
   
-  test <- cbind(dae@xsim[,seq(dimLhs)],dae@ysim)[seq_len((1-ratioVal) * dim(ysim)[1]),]
+  test <- cbind(dae@xsim[,seq(dimLhs)],dae@ysim)[seq_len((1-ratioVal) * dim(dae@ysim)[1]),] %>% 
+    as.data.frame()
   
-  
-  stoch_emulators <- variance_emulator_from_data(input_data = test, output_names = colnames(dae@ysim), ranges = ranges)
+  stoch_emulators <- emulator_from_data(input_data = test, output_names = colnames(dae@ysim), ranges = ranges)
   
   LHS <- generate_new_runs(stoch_emulators,genPts , targets) %>%  as.matrix()
   

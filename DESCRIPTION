@@ -1,6 +1,6 @@
 Package: trollcalibr
 Title: A package for (meta-)calibration of the individual-based and spatially-explicit forest growth model TROLL
-Version: 0.0.0.9003
+Version: 0.0.0.9004
 Authors@R: c(
     person("Guillaume", "Salzet", email="guillaume.salzet@inrae.fr", role=c("aut","cre"), comment = c(ORCID = "0000-0003-4548-5673")),
     person("Sylvain", "Schmitt", email="sylvain.m.schmitt@gmail.com", role=c("aut"), comment = c(ORCID = "0000-0001-7759-7106")),

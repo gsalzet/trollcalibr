@@ -3,6 +3,7 @@
 #' @importClassesFrom rcontroll trollsim trollstack
 #' @importFrom tidyr nest
 #' @importFrom dplyr rename bind_rows distinct
+#' @importFrom stats na.exclude
 NULL
 
 #' Function to split trollstack into a list of trollsim
@@ -41,15 +42,37 @@ setMethod("splitStack", "trollstack", function(stack,
   
   
   simulation <- stack@inputs$global$simulation %>% unique()
+  forests <- stack@forest %>% nest(.by=simulation) %>% 
+    rename("forestSim" = "data")
+  
+  if (!all(simulation == forests$simulation)) {
+    stop("At least one simulation contain no trees. Please filter.")
+  }
+  
+  # do.call(rbind, lapply(1:length(simulation),function(x){
+  #   ForWIP <- stack@forest %>% filter(simulation == simulation[x])
+  #   if(dim(ForWIP)[1] > 0){
+  #     return(ForWIP)
+  #   }else{
+  #     ForWIP <- TROLLv3_output@forest[1,]  
+  #     ForWIP[!is.na(ForWIP)] <- NA
+  #     return(ForWIP %>% mutate(simulation  = simulation[x]))
+  #   }
+  # }))
 
-  forests <- stack@forest %>% nest(.by=simulation) %>% rename("forestSim" = "data") 
-  ecosystem <- stack@ecosystem %>% nest(.by=simulation) %>% rename("ecosystemSim" = "data")
-  species <- stack@species %>% nest(.by=simulation) %>% rename("speciestSim" = "data")
+  
+  ecosystem <- stack@ecosystem %>%
+    nest(.by=simulation) %>% 
+    rename("ecosystemSim" = "data")
+  
+  species <- stack@species %>% 
+    nest(.by=simulation) %>% 
+    rename("speciestSim" = "data")
   lasI <- stack@las
   
   pathStack <- stack@path
   
-  ysim <- cbind(forests,ecosystem[,2],species[,2])
+  ysim <- cbind(ecosystem,species[,2],forests[,2])
   rm(forests,ecosystem,species)
   
   listSim <- list()

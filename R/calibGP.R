@@ -1,7 +1,7 @@
 #' @importFrom mvtnorm dmvnorm
-#' @importFrom BayesianTools createBayesianSetup createPriorDensity runMCMC
+#' @importFrom BayesianTools createBayesianSetup createPriorDensity runMCMC getSample
 #' @import hetGP
-#' @importFrom stats predict terms
+#' @importFrom stats predict terms as.formula model.matrix runif
 #' @importFrom utils menu timestamp
 #' @importFrom rlang f_rhs
 NULL
@@ -11,11 +11,12 @@ NULL
 #' @param yobs d.f. Observed summary statitics.
 #' @param xobs d.f. Observed variables for available summary statitics.
 #' @param xcalib d.f. Available variable on the whole studied setup.
-#' @param params.formulas list. list of equations linking estimated parameters.
-#' @param cov.formulas d.f. Available covariable for 'params.formulas' 
+#' @param paramsFormulas list. list of equations linking estimated parameters.
+#' @param covFormulas d.f. Available covariable for 'paramsFormulas' 
 #' on the whole studied setup.
 #' @param surmodel list. an adjusted TROLL surrogate model.
 #' @param ncores int. number of core to use.
+#' @param verbose bool. allow verbose
 #' @param calib.opts list. Calibrations options.
 #'
 #' @export
@@ -69,6 +70,7 @@ calibGP <- function(yobs,
                        "variables" = NULL)
   }
   
+  yF <- listGP <- out <- type <- NULL
   
   
   HM <- computeHM(dae,do.call(c,lapply(1:ncol(yF), function(x){setNames(list(c(min(yF[,x]),max(yF[,x]))), colnames(yF)[x])})),

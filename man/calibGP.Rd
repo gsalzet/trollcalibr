@@ -24,16 +24,18 @@ calibGP(
 
 \item{xcalib}{d.f. Available variable on the whole studied setup.}
 
+\item{paramsFormulas}{list. list of equations linking estimated parameters.}
+
+\item{covFormulas}{d.f. Available covariable for 'paramsFormulas'
+on the whole studied setup.}
+
 \item{surmodel}{list. an adjusted TROLL surrogate model.}
 
 \item{ncores}{int. number of core to use.}
 
+\item{verbose}{bool. allow verbose}
+
 \item{calib.opts}{list. Calibrations options.}
-
-\item{params.formulas}{list. list of equations linking estimated parameters.}
-
-\item{cov.formulas}{d.f. Available covariable for 'params.formulas'
-on the whole studied setup.}
 }
 \description{
 A function to process calibration using a completed DAE.

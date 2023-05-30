@@ -126,7 +126,7 @@ setMethod("processSetup",c(sim = "trollsim"), function(sim,
            Provide manually parameters using 'parameters' argument")
     }
     
-    parameters <- setup@parameters %>% filter(IDsim == sim@name) 
+    parameters <- setup@params %>% filter(IDsim == sim@name) 
   }
 
   
@@ -150,8 +150,10 @@ setMethod("processSetup",c(sim = "trollsim"), function(sim,
               inputsTmp <- if (length(interSim@outputs.opts)>=2) {
                 interSim@outputs.opts[2:length(interSim@outputs.opts)]
               }else{inputsTmp}
+              
               outputsSim <- if(saveInter){
-                c(outputsSim,list(interSim@outputs.opts))}else{
+                c(outputsSim,list(interSim@outputs.opts))
+                }else{
                   interSim@outputs.opts}
               
               simTmp <- troll(name = simTmp@name,
@@ -191,7 +193,7 @@ setMethod("processSetup",c(sim = "trollsim"), function(sim,
   if (saveInter) {
     setup@outputs.opts <- list("summary" = summarySim,"init" = sim,"outputs" = outputsSim)
   }else{
-    setup@outputs.opts <- list("summary" = summarySim,"init" = sim,"outputs" = outputsSim[length(outputsSim)])
+    setup@outputs.opts <- list("summary" = summarySim,"init" = NULL,"outputs" = outputsSim[length(outputsSim)])
   }
   setup@inputs.opts <- inputs
 
@@ -300,7 +302,7 @@ setMethod("processSetup",c(sim = "trollstack"), function(sim,
   setup@inputs.opts <- inputs
   
   setup@outputs.opts <- list("summary" = do.call(rbind,lapply(sumstack,function(x){x@outputs.opts$summary})),
-                             "init" = sim,
+                             "init" = if (saveInter) {sim}else{NULL},
                              "outputs" = lapply(sumstack,function(x){x@outputs.opts$outputs}))
   
   return(setup) 

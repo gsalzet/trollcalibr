@@ -1,7 +1,8 @@
 #' @include TROLLv3_sim.R
 #' @importFrom parallel detectCores
 #' @importFrom tidyr unnest
-#' @importFrom dplyr filter_at matches vars all_vars any_vars
+#' @importFrom dplyr filter_at matches vars all_vars any_vars bind_rows
+#' @importFrom parallel parLapply makeCluster clusterExport stopCluster detectCores 
 #' @import hetGP
 #' @importFrom stats var cor cov quantile qt
 NULL
@@ -112,7 +113,7 @@ processSim <- function(dae,
       stop("'filesave' argument of 'processSim' must be a character and dir in path must exist")
     }
   }
-
+  
   if (!is(checkConverge, c("logical"))) {
     stop("'checkConverge' argument of 'processSim' must be a logical")
   }
@@ -129,7 +130,7 @@ processSim <- function(dae,
   }
   
   if (dae@state %in% c("In-processing","Post-simulation") ) {
-    warning("'dae' state of 'processSim' is partially or totally processed for simulation step.")
+    message("'dae' state of 'processSim' is partially or totally processed for simulation step.")
   }
   
   if (!inherits(nyearsSampling, c("numeric","integer") ) || 
@@ -209,8 +210,9 @@ processSim <- function(dae,
   
   listSim <- list()
   
-  if (floor(initk/(cores)) +1 < max(nrep$ID_iter)) {
-    
+  summarySim <- outputsSim <- NULL
+  
+  if (floor(initk/(cores)) != max(nrep$ID_iter)) {
     for (blocki in ( floor(initk/(cores)) +1):max(nrep$ID_iter)) {
       
       listSimi <- list()
@@ -236,36 +238,50 @@ processSim <- function(dae,
       while (!allconverged && nyearsSim < nyearsMax) {
         
         if(verbose){cat(paste0("Computing TROLL initial simulation # ", blocki , " / ",
-                   max(nrep$ID_iter), "\n non-converged: ",length(simulations)," / ",min(cores,length(simulations))," | ",
-                   gsub(":", "-",
-                        gsub(
-                          " ", "_",
-                          date()
-                        )),"\n"))}
+                               max(nrep$ID_iter), "\n non-converged: ",length(simulations)," / ",min(cores,length(simulations))," | ",
+                               gsub(":", "-",
+                                    gsub(
+                                      " ", "_",
+                                      date()
+                                    )),"\n"))}
         
-        sim_stack <- stack(path = path,
-                           name = "sim_stack",
-                           simulations = simulations,
-                           global = if(is.null(globalUpdated)){params %>% select(IDsim,globalData) %>% 
-                               filter(IDsim %in% simulations) %>% select(-IDsim) %>%
-                               unnest(cols = c(globalData))}else{globalUpdated},
-                           species = params %>% select(IDsim,speciesData) %>% 
-                             filter(IDsim %in% simulations) %>% select(-IDsim) %>%
-                             unnest(cols = c(speciesData)),
-                           climate = params %>% select(IDsim,climateData) %>% 
-                             filter(IDsim %in% simulations) %>% select(-IDsim) %>% 
-                             unnest(cols = c(climateData)),
-                           daily = params %>% select(IDsim,dailyData) %>% 
-                             filter(IDsim %in% simulations) %>% select(-IDsim) %>% 
-                             unnest(cols = c(dailyData)),
-                           verbose = FALSE,
-                           lidar = if(!is.null(params$lidarData[[1]])){params %>% 
-                               select(IDsim,lidarData) %>% 
-                               filter(IDsim %in% simulations) %>% select(-IDsim) %>%
-                               unnest(cols = c(lidarData))}else{NULL},
-                           forest = forestInit,
-                           cores = cores,
-                           overwrite = TRUE)
+        clust <- makeCluster(cores)
+        clusterExport(clust,varlist = c("globalUpdated", "params","forestInit","TROLLv3_output",
+                                        "troll","select","%>%","filter","unnest","is.null"),
+                      envir = environment())
+        
+        sim_stack <-  setNames(parLapply(clust, simulations, fun = function(x){sim <- troll(path = path,
+                                                                                            name = x,
+                                                                                            global = if(is.null(globalUpdated)){params %>% select(IDsim,globalData) %>% 
+                                                                                                filter(IDsim %in% x) %>% select(-IDsim) %>%
+                                                                                                unnest(cols = c(globalData))}else{globalUpdated},
+                                                                                            species = params %>% select(IDsim,speciesData) %>% 
+                                                                                              filter(IDsim %in% x) %>% select(-IDsim) %>%
+                                                                                              unnest(cols = c(speciesData)),
+                                                                                            climate = params %>% select(IDsim,climateData) %>% 
+                                                                                              filter(IDsim %in% x) %>% select(-IDsim) %>% 
+                                                                                              unnest(cols = c(climateData)),
+                                                                                            daily = params %>% select(IDsim,dailyData) %>% 
+                                                                                              filter(IDsim %in% x) %>% select(-IDsim) %>% 
+                                                                                              unnest(cols = c(dailyData)),
+                                                                                            verbose = FALSE,
+                                                                                            lidar = if(!is.null(params$lidarData[[1]])){params %>% 
+                                                                                                select(IDsim,lidarData) %>% 
+                                                                                                filter(IDsim %in% x) %>% select(-IDsim) %>%
+                                                                                                unnest(cols = c(lidarData))}else{NULL},
+                                                                                            forest = if(!is.null(forestInit)){forestInit  %>% 
+                                                                                                filter(simulation %in% x) }else{NULL},
+                                                                                            overwrite = TRUE)
+        if (dim(sim@forest)[1] == 0) {
+          sim@forest <- TROLLv3_output@forest[1,]
+          sim@forest[1,] <- NA
+          
+          sim@forest$iter <- max(sim@ecosystem$iter)+1
+        }
+        return(sim)}),simulations) %>% 
+          gatherStack(name = dae@name)
+        
+        stopCluster(clust)
         
         if (!is.null(sim_stack_tmp)) {
           sim_stack@forest <- rbind(sim_stack_tmp@forest,
@@ -282,12 +298,12 @@ processSim <- function(dae,
                                        mutate(iter = iter + max(sim_stack_tmp@species$iter) + 1))
           listSimi <- setNames(splitStack(sim_stack),simulations)
         }else{
-          listSimi <- setNames(splitStack(sim_stack),simulations)
+          listSimi <- splitStack(sim_stack)
           
           sim_stack_tmp <- sim_stack
         }
         
-
+        
         
         if (checkConverge) {
           
@@ -304,7 +320,7 @@ processSim <- function(dae,
           summaryRhat <- lapply(lapply(listSimi,function(x){processExp(x,expSummary,inputs = list("nyearsSim" = nyearsSim,
                                                                                                   "nyearsSampling" = nyearsSampling,
                                                                                                   "burn.in" = 0) )}),slot,"outputs.opts") %>% 
-            dplyr::bind_rows() %>% as.matrix()
+            bind_rows() %>% as.matrix()
           
           colnames(summaryRhat) <- colnames(expSummary@outputs.opts$summary) 
           
@@ -351,7 +367,29 @@ processSim <- function(dae,
         }
         
       }
-      rm(sim_stack,sim_stack_tmp,listSimi,allconverged)
+      rm(sim_stack_tmp,listSimi,allconverged)
+      
+      
+      if(verbose){cat(paste0("Computing TROLL Experiment # ", blocki , " / ",
+                             max(nrep$ID_iter),"\n",
+                             gsub(":", "-",
+                                  gsub(
+                                    " ", "_",
+                                    date()
+                                  )),"\n"))}
+      
+      
+      
+      setup_processed <- processSetup(gatherStack(listSim,dae@name), 
+                                      inputs = inputs,
+                                      setup = setup,
+                                      saveInter = FALSE,
+                                      cores = cores)
+      summarySim <- rbind(summarySim,setup_processed@outputs.opts$summary)
+      outputsSim <- c(outputsSim,setup_processed@outputs.opts$outputs)
+      
+      listSim <- list()
+      gc()
       
       if (blocki %% 10 == 0 && !is.null(filesave)) {
         save(dae,inputs, 
@@ -363,6 +401,8 @@ processSim <- function(dae,
              nyearsStep,
              nyearsMax,
              simOpts, 
+             summarySim,
+             outputsSim,
              file = paste0(filesave,
                            "/save_iter", blocki , "-", max(nrep$ID_iter), "_", 
                            gsub(":", "-",
@@ -377,6 +417,15 @@ processSim <- function(dae,
                            ,".rda"))
       }
     }
+    
+    setup@outputs.opts$summary <- summarySim
+    #setup@outputs.opts$init <- gatherStack(listSim,name = dae@name)
+    setup@outputs.opts$outputs <- outputsSim
+    dae@experiments <- list(setup)
+    setup@outputs.opts$init <- NULL
+    dae@ysim <- setup@outputs.opts$summary
+    
+    rm(summarySim,outputsSim,listSim)
     
     if (!is.null(filesave)) {
       save(dae,inputs, 
@@ -401,40 +450,8 @@ processSim <- function(dae,
                               ))
                          ,".rda"))
     }
-    
-    
-    summarySim <- NULL
-    outputsSim <- NULL
-    for (blocki in seq_len(max(nrep$ID_iter))) {
-      
-      if(verbose){cat(paste0("Computing TROLL Experiment # ", blocki , " / ",
-                             max(nrep$ID_iter),"\n",
-                             gsub(":", "-",
-                                  gsub(
-                                    " ", "_",
-                                    date()
-                                  )),"\n"))}
-      
-      
-      sim_stack <- gatherStack(listSim[which(nrep$ID_iter == blocki)],name = dae@name)
-      setup_processed <- processSetup(sim_stack, 
-                                      inputs = inputs,
-                                      setup = setup,
-                                      saveInter = FALSE,
-                                      cores = cores)
-      summarySim <- rbind(summarySim,setup_processed@outputs.opts$summary)
-      outputsSim <- c(outputsSim,setup_processed@outputs.opts$outputs)
-    }
-    
-    setup@outputs.opts$summary <- summarySim
-    setup@outputs.opts$init <- gatherStack(listSim,name = dae@name)
-    setup@outputs.opts$outputs <- outputsSim
-    dae@experiments <- list(setup)
-    setup@outputs.opts$init <- NULL
-    dae@ysim <- setup@outputs.opts$summary
-    
-    rm(summarySim,outputsSim,listSim)
   }
+  
   switch (dae@type[1],
           "HM" = {dae <- .historyMatching(dae = dae,
                                           simOpts = simOpts,
@@ -455,7 +472,7 @@ processSim <- function(dae,
           "RAW" = {})
   
   dae@state <- "Post-simulation"
-
+  
   return(dae)
 }
 
@@ -493,10 +510,10 @@ processSim <- function(dae,
     
   }
   
-
   
-
-    
+  
+  
+  
   
   ecosystem[is.nan(ecosystem)] <- 0
   
@@ -583,7 +600,7 @@ processSim <- function(dae,
       return(horizons[[x]])})
     
     opt <- do.call(rbind,lapply(seq_len(dim(dae@ysim)[2]), function(x){return((IMSPE_optim(GP@models[[x]],horizons[[x]][seqIter], 
-                  control=list(tol_dist=1e-4, tol_diff=1e-4, multi.start=30),ncores = 1))$par)}))
+                                                                                           control=list(tol_dist=1e-4, tol_diff=1e-4, multi.start=30),ncores = 1))$par)}))
     
     if (dim(opt)[1] < cores) {
       
@@ -592,16 +609,16 @@ processSim <- function(dae,
       lhsUnique <- dae@lhs %>%  unique()
       
       repIndex <- do.call(rbind,lapply(seq_len(dim(dae@ysim)[2]), 
-                           function(x){allocate_mult(GP@models[[x]],
-                                                     floor((cores - dim(opt)[1])/dim(dae@ysim)[2]))})) %>% 
+                                       function(x){allocate_mult(GP@models[[x]],
+                                                                 floor((cores - dim(opt)[1])/dim(dae@ysim)[2]))})) %>% 
         colSums()
       
       X <- do.call(rbind,lapply(seq_len(dim(lhsUnique)[1]),
-             function(x){matrix(rep(lhsUnique[x],
-                                    repIndex[x]),
-                                nrow = repIndex[x], 
-                                ncol = dim(lhsUnique)[2],
-                                byrow = TRUE)}))
+                                function(x){matrix(rep(lhsUnique[x],
+                                                       repIndex[x]),
+                                                   nrow = repIndex[x], 
+                                                   ncol = dim(lhsUnique)[2],
+                                                   byrow = TRUE)}))
       
       X <- rbind(rbind(X, matrix(rep(t(X), max(daeWIP@doeopts$nreplica -1, 0) ), ncol= dim(lhs)[2] , byrow=TRUE)),lhs)
       
@@ -620,26 +637,26 @@ processSim <- function(dae,
       daeWIP@lhs <- lhs
       
       daeWIP@doeopts$nsim <- dim(daeWIP@lhs)[1]/daeWIP@doeopts$nreplica
-
+      
       
     }
     
-     
+    
     
     
     daeWIP <- generate_params(obj = daeWIP,
-                    nyearsInit = dae@simopts$nyearsInit,
-                    fnGlobal = dae@doeopts$fnParams$fnGlobal,
-                    fnClimate = dae@doeopts$fnParams$fnClimate,
-                    climateInit = dae@doeopts$fnParams$climateInit,
-                    fnDaily = dae@doeopts$fnParams$fnDaily,
-                    dailyInit = dae@doeopts$fnParams$dailyInit,
-                    fnSpecies = dae@doeopts$fnParams$fnSpecies,
-                    speciesInit = dae@doeopts$fnParams$speciesInit,
-                    fnLidar = dae@doeopts$fnParams$fnLidar,
-                    covariates = dae@doeopts$fnParams$covariates,
-                    echo = FALSE, minID = dim(dae@ysim)[1])
-
+                              nyearsInit = dae@simopts$nyearsInit,
+                              fnGlobal = dae@doeopts$fnParams$fnGlobal,
+                              fnClimate = dae@doeopts$fnParams$fnClimate,
+                              climateInit = dae@doeopts$fnParams$climateInit,
+                              fnDaily = dae@doeopts$fnParams$fnDaily,
+                              dailyInit = dae@doeopts$fnParams$dailyInit,
+                              fnSpecies = dae@doeopts$fnParams$fnSpecies,
+                              speciesInit = dae@doeopts$fnParams$speciesInit,
+                              fnLidar = dae@doeopts$fnParams$fnLidar,
+                              covariates = dae@doeopts$fnParams$covariates,
+                              echo = FALSE, minID = dim(dae@ysim)[1])
+    
     setup <- setupExperiments(dae = daeWIP,
                               listexp = dae@experiments[[1]]@listexp[2:length(dae@experiments[[1]]@listexp)],
                               inputs = dae@experiments[[1]]@inputs.opts)
@@ -681,9 +698,9 @@ processSim <- function(dae,
     
   }
   
-  dae@simopts$settingsGP <- 
-  
-  return(dae)
+  # dae@simopts$settingsGP <- 
+    
+    return(dae)
 }
 
 .historyMatching <- function(dae,
@@ -721,8 +738,8 @@ processSim <- function(dae,
     
     
     X <- rbind(HMWIP@modelsopts$newLHS, 
-                 matrix(rep(t(HMWIP@modelsopts$newLHS), max(daeWIP@doeopts$nreplica -1, 0) ), 
-                        ncol= dim(HMWIP@modelsopts$newLHS)[2] , byrow=TRUE))
+               matrix(rep(t(HMWIP@modelsopts$newLHS), max(daeWIP@doeopts$nreplica -1, 0) ), 
+                      ncol= dim(HMWIP@modelsopts$newLHS)[2] , byrow=TRUE))
     daeWIP@lhs <- X[sample(nrow(X)),]
     
     
@@ -774,7 +791,7 @@ processSim <- function(dae,
   }
   
   
-  dae@type <- c("GP")
+  dae@type <- dae@type[2]
   
   return(dae)
 }

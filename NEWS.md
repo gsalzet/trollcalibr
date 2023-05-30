@@ -1,3 +1,9 @@
+## trollcalibr 0.0.9004
+
+ - use parLapply + troll instead of stack for HPC ;
+ - Resolve computeHM bug.
+ - V0.1 calibGP function
+
 ## trollcalibr 0.0.9003
 
 -   V1: addExp, computeGP, computeHM, createExp, generateParam, lhscorcorr, processExp, 

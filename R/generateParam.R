@@ -159,7 +159,7 @@ setMethod("generate_params", "trolldae", function(obj,
     select(param) %>% unlist() %>% as.character()
   
   globalParam <- paramsBounds %>% 
-    filter(type == "global" & parameter %in% c(default_global,"fallocleaf")|
+    filter(type == "global" & parameter %in% c(default_global,"fallocleaf","wsglim")|
              type %in% c("global","covariate") & !is.null(fnGlobal))
   if(is.null(fnGlobal)){fnGlobal <- .fnGlobal}
   
