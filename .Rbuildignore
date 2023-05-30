@@ -1,0 +1,9 @@
+^.*\.Rproj$
+^\.Rproj\.user$
+^\.github$
+^codecov\.yml$
+^cran-comments\.md$
+^.lintr
+^LICENSE\.md$
+^LICENSE$
+^trollcalibr\.drawio$
