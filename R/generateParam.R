@@ -107,12 +107,6 @@ setMethod("generate_params", "trolldae", function(obj,
     stop("The 'obj' argument of the 'generate_params' function must be a trolldae object")
   }
   
-  if(!(dim(obj@lhs)[1] == (obj@doeopts$nsim * obj@doeopts$nreplica * length(obj@doeopts$dimPlot))  &&
-       dim(obj@lhs)[2] == (dim(obj@boundaries)[1] + as.integer(!is.null(obj@doeopts$forestInit))))) {
-    stop("The 'lhs' and 'boundaries slots from the 'obj' object of the 'generate_params' function have incorrect dimensions.\n
-         Re-initialize a valide 'obj' trolldae object with 'setupDesign' function.")
-  }
-  
   if (!inherits(nyearsInit, c("numeric","integer") ) | 
       !(as.integer(nyearsInit) == nyearsInit) & !is.null(nyearsInit)) {
     stop("'nyearsInit' argument of 'generate_params' must be a integer")

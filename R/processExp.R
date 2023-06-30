@@ -5,7 +5,7 @@ NULL
 
 #'  Process an individual experiment on a TROLL simulation.
 #'
-#' @param sim trollsim. a TROLL simulaiton object to process.
+#' @param sim trollsim. a TROLL simulation object to process.
 #' @param singleExp trollexpsingle. a trollexpsingle object to be applied on 'sim'.
 #' @param parameters list.list of trollexpsingle object.
 #' @param inputs list. Initial inputs for experiments.
@@ -81,25 +81,26 @@ processExp <- function(sim,
   
   
   # Global variables
- outputs <- id <- NULL
+ outputs <- id <- outputs_fn <-  NULL
+ 
+ id <-  singleExp@id
+ 
+ outputs_fn <- try(singleExp@func(x = sim,parameters = parameters,inputs = inputs),silent = TRUE)
+ 
   
     if (singleExp@type != "Summary") {
       
-      if (!any(!inherits(try(expect_s4_class(singleExp@func(x = sim,parameters = parameters,inputs = inputs),"trollsim"),silent = TRUE),"try-error"),
-               !inherits(try(expect_s4_class(singleExp@func(x = sim,parameters = parameters,inputs = inputs)[[1]],"trollsim"),silent = TRUE),"try-error"))) {
+      if (!any(!inherits(try(expect_s4_class(outputs_fn,"trollsim"),silent = TRUE),"try-error"),
+               !inherits(try(expect_s4_class(outputs_fn[[1]],"trollsim"),silent = TRUE),"try-error"))) {
         stop("'func' slot of 'processExp' must be provide a trollsim object or 
              a list with the first element is a trollsim")
       }
-      if ((identical(singleExp@func(x = sim,parameters = parameters,inputs = inputs),sim) || 
-          identical(try(singleExp@func(x = sim,parameters = parameters,inputs = inputs)[[1]],silent = TRUE),sim)) && singleExp@type != "Init") {
-        warning(paste0("No change observed on tested trollsim after experiment. Check 'func' slot of singleExp ",singleExp@id))
-      }
       
-      if (!inherits(try(expect_s4_class(singleExp@func(x = sim,parameters = parameters,inputs = inputs),"trollsim"),silent = TRUE),"try-error")) {
-        outputs <- list(singleExp@func(x = sim,parameters = parameters,inputs = inputs))
+      if (!inherits(try(expect_s4_class(outputs_fn,"trollsim"),silent = TRUE),"try-error")) {
+        outputs <- list(outputs_fn)
         
       }else{
-        outputs <- (singleExp@func(x = sim,parameters = parameters,inputs = inputs)) 
+        outputs <- (outputs_fn) 
         
         
       }
@@ -113,8 +114,8 @@ processExp <- function(sim,
       outputs$sim@inputs$global <- update_parameters(outputs[[1]],iters = 12*singleExp@deltat)
       
     }else{
-      expect_true(inherits(singleExp@func(x = sim,parameters = parameters,inputs = inputs), "matrix"))
-      outputs <- list(singleExp@func(x = sim,parameters = parameters,inputs = inputs))
+      expect_true(inherits(outputs_fn, "matrix"))
+      outputs <- list(outputs_fn)
       
       if (length(outputs) == 1) {
         outputs <-  setNames(outputs, c("summary"))

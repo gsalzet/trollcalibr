@@ -3,7 +3,7 @@
 \name{computeHM}
 \alias{computeHM}
 \title{History matching approach with hierarchical
-emulators (\code{\link[hmer:variance_emulator_from_data]{hmer}}) for stochastic systems}
+emulators (\code{\link[hmer:emulator_from_data]{hmer}}) for stochastic systems}
 \usage{
 computeHM(dae, targets, genPts = 100, ratioVal = 0.1, inmem = FALSE)
 }
@@ -27,5 +27,5 @@ a surmodel object.
 }
 \description{
 History matching approach with hierarchical
-emulators (\code{\link[hmer:variance_emulator_from_data]{hmer}}) for stochastic systems
+emulators (\code{\link[hmer:emulator_from_data]{hmer}}) for stochastic systems
 }

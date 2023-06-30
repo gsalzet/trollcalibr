@@ -1,8 +1,8 @@
 #' @include TROLLv3_sim.R
 #' @importFrom parallel detectCores
 #' @importFrom tidyr unnest
-#' @importFrom dplyr filter_at matches vars all_vars any_vars bind_rows
-#' @importFrom parallel parLapply makeCluster clusterExport stopCluster detectCores 
+#' @importFrom dplyr filter_at matches vars all_vars any_vars bind_rows select
+#' @importFrom parallel parLapply makeCluster clusterExport stopCluster detectCores clusterEvalQ
 #' @import hetGP
 #' @importFrom stats var cor cov quantile qt
 NULL
@@ -150,6 +150,10 @@ processSim <- function(dae,
       stop("'nyearsMax' argument of 'processSim' must be a integer")
     }
     
+    if (nyearsMax <= dae@simopts$nyearsInit) {
+      stop("'nyearsMax' argument of 'processSim' must be over 'nyearsInit'")
+    }
+    
   }else{
     nyearsMax <- dae@simopts$nyearsInit+1
   }
@@ -168,10 +172,11 @@ processSim <- function(dae,
     }
   } 
   
-  if (is.null(simOpts) && dae@type[1] != "RAW") {
+  if (is.null(simOpts)) {
     simOpts <- list("genPts" = dae@doeopts$nsim,
                     "ratioVal" = 0.2,
                     "nbWave" = 2,
+                    "ratioProcess" = 0.1,
                     "targets" = targets,
                     "lower" = NULL,
                     "upper" = NULL,
@@ -250,28 +255,29 @@ processSim <- function(dae,
                                         "troll","select","%>%","filter","unnest","is.null"),
                       envir = environment())
         
-        sim_stack <-  setNames(parLapply(clust, simulations, fun = function(x){sim <- troll(path = path,
-                                                                                            name = x,
-                                                                                            global = if(is.null(globalUpdated)){params %>% select(IDsim,globalData) %>% 
-                                                                                                filter(IDsim %in% x) %>% select(-IDsim) %>%
-                                                                                                unnest(cols = c(globalData))}else{globalUpdated},
-                                                                                            species = params %>% select(IDsim,speciesData) %>% 
-                                                                                              filter(IDsim %in% x) %>% select(-IDsim) %>%
-                                                                                              unnest(cols = c(speciesData)),
-                                                                                            climate = params %>% select(IDsim,climateData) %>% 
-                                                                                              filter(IDsim %in% x) %>% select(-IDsim) %>% 
-                                                                                              unnest(cols = c(climateData)),
-                                                                                            daily = params %>% select(IDsim,dailyData) %>% 
-                                                                                              filter(IDsim %in% x) %>% select(-IDsim) %>% 
-                                                                                              unnest(cols = c(dailyData)),
-                                                                                            verbose = FALSE,
-                                                                                            lidar = if(!is.null(params$lidarData[[1]])){params %>% 
-                                                                                                select(IDsim,lidarData) %>% 
-                                                                                                filter(IDsim %in% x) %>% select(-IDsim) %>%
-                                                                                                unnest(cols = c(lidarData))}else{NULL},
-                                                                                            forest = if(!is.null(forestInit)){forestInit  %>% 
-                                                                                                filter(simulation %in% x) }else{NULL},
-                                                                                            overwrite = TRUE)
+        sim_stack <-  setNames(parLapply(clust, simulations, fun = function(x){
+          sim <- troll(path = path,
+                       name = x,
+                       global = if(is.null(globalUpdated)){params %>% select(IDsim,globalData) %>% 
+                           filter(IDsim %in% x) %>% select(-IDsim) %>%
+                           unnest(cols = c(globalData))}else{globalUpdated},
+                       species = params %>% select(IDsim,speciesData) %>% 
+                         filter(IDsim %in% x) %>% select(-IDsim) %>%
+                         unnest(cols = c(speciesData)),
+                       climate = params %>% select(IDsim,climateData) %>% 
+                         filter(IDsim %in% x) %>% select(-IDsim) %>% 
+                         unnest(cols = c(climateData)),
+                       daily = params %>% select(IDsim,dailyData) %>% 
+                         filter(IDsim %in% x) %>% select(-IDsim) %>% 
+                         unnest(cols = c(dailyData)),
+                       verbose = FALSE,
+                       lidar = if(!is.null(params$lidarData[[1]])){params %>% 
+                           select(IDsim,lidarData) %>% 
+                           filter(IDsim %in% x) %>% select(-IDsim) %>%
+                           unnest(cols = c(lidarData))}else{NULL},
+                       forest = if(!is.null(forestInit)){forestInit  %>% 
+                           filter(simulation %in% x) }else{NULL},
+                       overwrite = TRUE)
         if (dim(sim@forest)[1] == 0) {
           sim@forest <- TROLLv3_output@forest[1,]
           sim@forest[1,] <- NA
@@ -384,7 +390,8 @@ processSim <- function(dae,
                                       inputs = inputs,
                                       setup = setup,
                                       saveInter = FALSE,
-                                      cores = cores)
+                                      cores = min(floor(simOpts$ratioProcess * cores),
+                                                  cores))
       summarySim <- rbind(summarySim,setup_processed@outputs.opts$summary)
       outputsSim <- c(outputsSim,setup_processed@outputs.opts$outputs)
       
@@ -469,9 +476,9 @@ processSim <- function(dae,
                                       nyearsSampling = nyearsSampling,
                                       nyearsStep = nyearsStep,
                                       nyearsMax = nyearsMax)}, 
-          "RAW" = {})
+          "RAW" = {dae@state <- "Post-simulation"})
   
-  dae@state <- "Post-simulation"
+  
   
   return(dae)
 }

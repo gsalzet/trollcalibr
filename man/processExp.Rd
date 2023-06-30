@@ -7,7 +7,7 @@
 processExp(sim, singleExp, parameters = NULL, inputs = NULL)
 }
 \arguments{
-\item{sim}{trollsim. a TROLL simulaiton object to process.}
+\item{sim}{trollsim. a TROLL simulation object to process.}
 
 \item{singleExp}{trollexpsingle. a trollexpsingle object to be applied on 'sim'.}
 

@@ -70,7 +70,7 @@ covariate table or experiment setup ;
 \item quantileFn: fct. Quantile function to scale margin
 distribution of studied parameter ;
 \item type: chr. Type of parameter ('global'/ 'species'/
-'climate'/ 'daily'/ 'covariate/ 'experiment').
+'climate'/ 'daily'/ 'covariate/ 'experiment','qualitative').
 }
 
 'forestInit' data.frame is formatted as followed:
@@ -106,7 +106,7 @@ distribution of studied parameter ;
    \(x) {qunif(x,0.4,0.8)}, # CR_b
    \(x) {qunif(x,0.8,1.2)},# Hmaxcor
    \(x) {ceiling(qunif(x,0,14))}), #Habitat 
-   type = c("global","global","global","global","global","global","species", "covariate"))
+   type = c("global","global","global","global","global","global","species", "qualitative"))
    
 ForestTest <- TROLLv3_sim@forest
 ForestInitTRUE <- rbind(ForestTest \%>\% mutate(simulation = "test"),

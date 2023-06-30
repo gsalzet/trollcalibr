@@ -1,8 +1,8 @@
-#' @importFrom hmer variance_emulator_from_data generate_new_runs
+#' @importFrom hmer generate_new_runs emulator_from_data
 NULL
 
 #' History matching approach with hierarchical 
-#' emulators (\code{\link[hmer:variance_emulator_from_data]{hmer}}) for stochastic systems
+#' emulators (\code{\link[hmer:emulator_from_data]{hmer}}) for stochastic systems
 #'
 #' @param dae trolldae. an initialized trolldae object.
 #' @param targets  list. list of target boundaries.

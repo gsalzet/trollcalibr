@@ -108,6 +108,9 @@ createExp <- function(id,
     }
     
     deltaT <- as.integer(deltaT)
+    if(deltaT == 0){
+      deltaT <- 0L
+    }
   }
   
   if (type != "Init" || !is.null(inputs)) {
@@ -136,27 +139,30 @@ createExp <- function(id,
     }
     
     test <- TROLLv3_sim
+    
+    outputs <- try(fnExp(x = test,parameters = parameters,inputs = inputs),silent = TRUE)
+    
     if (type == "Inter") {
       
       if (!any(!inherits(try(expect_s4_class(
-        fnExp(x = test,parameters = parameters,inputs = inputs),
+        outputs,
         "trollsim"),silent = TRUE),"try-error"),
                !inherits(try(expect_s4_class(
-                 fnExp(x = test,parameters = parameters,inputs = inputs)[[1]],
+                 outputs[[1]],
                  "trollsim"),silent = TRUE),"try-error"))) {
         stop("'fnExp' argument of 'createExp' must be provide a trollsim object or a list with the first element is a trollsim")
       }
-      if (identical(fnExp(x = test,parameters = parameters,inputs = inputs),test) || 
-          identical(try(fnExp(x = test,parameters = parameters,inputs = inputs)[[1]],silent = TRUE),test)) {
+      if (identical(outputs,test) || 
+          identical(try(outputs[[1]],silent = TRUE),test)) {
         warning(paste0("No change observed on tested trollsim after experiment. 
                        Check 'fnExp' of Experiment.",id))
       }
       
-      if (!inherits(try(expect_s4_class(fnExp(x = test,parameters = parameters,inputs = inputs),"trollsim"),silent = TRUE),"try-error")) {
-        outputs <- list(fnExp(x = test,parameters = parameters,inputs = inputs))
+      if (!inherits(try(expect_s4_class(outputs,"trollsim"),silent = TRUE),"try-error")) {
+        outputs <- list(outputs)
         
       }else{
-        outputs <- (fnExp(x = test,parameters = parameters,inputs = inputs)) 
+        outputs <- (outputs) 
         
         
       }
@@ -170,8 +176,8 @@ createExp <- function(id,
       outputs$sim@inputs$global <- update_parameters(outputs$sim,iters = 12*deltaT)
       
     }else{
-      expect_true(inherits(fnExp(x = test,parameters = parameters,inputs = inputs), "matrix"))
-      outputs <- list(fnExp(x = test,parameters = parameters,inputs = inputs))
+      expect_true(inherits(outputs, "matrix"))
+      outputs <- list(outputs)
       
       if (length(outputs) == 1) {
         outputs <- setNames(outputs, c("summary")) 

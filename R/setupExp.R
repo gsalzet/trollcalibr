@@ -150,7 +150,7 @@ setupExperiments <- function(
   
   params <- dae@params %>% 
     select(c("IDsim",(dae@boundaries %>% 
-              filter(type %in% c("experiment","covariable")) %>% 
+              filter(type %in% c("experiment","covariate")) %>% 
               select(parameter))$parameter)) %>% mutate(ID = row_number())
   
   paramsTest <- params[1,]
@@ -164,17 +164,18 @@ setupExperiments <- function(
   for (ExpI in listexp) {
     
     if (is.null(tmpExp)) {
-      tmpExp <-processExp(sim = test,
-                                 singleExp = ExpI,
-                                 parameters = paramsTest,inputs = inputs)
+      tmpExp <- processExp(sim = test,
+                          singleExp = ExpI,
+                          parameters = paramsTest,
+                          inputs = inputs)
       
       outputs <- tmpExp@outputs.opts
     }else{
       
-      tmpExp <-processExp(sim = outputs$sim,
-                                 singleExp = ExpI,
-                                 parameters = paramsTest,
-                                 inputs = append(inputs, outputs))
+      tmpExp <- processExp(sim = outputs$sim,
+                           singleExp = ExpI,
+                           parameters = paramsTest,
+                           inputs = append(inputs, outputs))
       outputs <- append(outputs,tmpExp@outputs.opts)
     }
     

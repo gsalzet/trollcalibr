@@ -148,29 +148,33 @@ setMethod("processSetup",c(sim = "trollsim"), function(sim,
               interSim <- processExp(sim = simTmp,singleExp = listExp,parameters = parameters,inputs = inputsTmp)
               simTmp <- interSim@outputs.opts$sim
               inputsTmp <- if (length(interSim@outputs.opts)>=2) {
-                interSim@outputs.opts[2:length(interSim@outputs.opts)]
-              }else{inputsTmp}
+                c(inputsTmp,interSim@outputs.opts[2:length(interSim@outputs.opts)])
+              }else{c(inputsTmp,inputsTmp)}
               
               outputsSim <- if(saveInter){
                 c(outputsSim,list(interSim@outputs.opts))
                 }else{
                   interSim@outputs.opts}
               
-              simTmp <- troll(name = simTmp@name,
-                              path = if(dir.exists(simTmp@path)){simTmp@path}else{tempdir()},
-                              global = update_parameters(simTmp,nbiter = 12*listExp@deltat),
-                              species = simTmp@inputs$species,
-                              climate = simTmp@inputs$climate,
-                              daily = simTmp@inputs$daily, 
-                              lidar = if(!inherits(simTmp@inputs$lidar,"data.frame") && 
-                                         !is.null(simTmp@inputs$lidar)){
-                                if (dim(simTmp@inputs$lidar)[1]>0) {
-                                  simTmp@inputs$lidar
-                                }else{NULL}
+              if (listExp@deltat > 0) {
+                simTmp <- troll(name = simTmp@name,
+                                path = if(dir.exists(simTmp@path)){simTmp@path}else{tempdir()},
+                                global = update_parameters(simTmp,nbiter = 12*listExp@deltat),
+                                species = simTmp@inputs$species,
+                                climate = simTmp@inputs$climate,
+                                daily = simTmp@inputs$daily, 
+                                lidar = if(!inherits(simTmp@inputs$lidar,"data.frame") && 
+                                           !is.null(simTmp@inputs$lidar)){
+                                  if (dim(simTmp@inputs$lidar)[1]>0) {
+                                    simTmp@inputs$lidar
+                                  }else{NULL}
                                 }else{NULL},
-                              forest = get_forest(simTmp),
-                              verbose = TRUE,
-                              overwrite = TRUE)
+                                forest = get_forest(simTmp),
+                                verbose = TRUE,
+                                overwrite = TRUE)
+              }
+              
+
             },
             "Summary" = {
               sumSim <- processExp(sim = simTmp,singleExp = listExp,parameters = parameters,inputs = inputsTmp)
@@ -280,7 +284,7 @@ setMethod("processSetup",c(sim = "trollstack"), function(sim,
   
   allSimulations <- unique(sim@inputs$global$simulation)
   
-  inputsTmp <- setNames(rep(inputs,length(allSimulations)),allSimulations)
+  inputsTmp <- inputs
   
   clust <- makeCluster(cores)
   clusterExport(clust,varlist = c("setup", "inputsTmp","saveInter","parameters","processSetup"),
@@ -289,7 +293,7 @@ setMethod("processSetup",c(sim = "trollstack"), function(sim,
   sumstack <- parLapply(clust,splitStack(sim),
                         fun = function(x){processSetup(sim = x,
                                                          setup = setup,
-                                                         inputs = inputsTmp[which(names(inputsTmp) == x@name)],
+                                                         inputs = inputsTmp,
                                                          saveInter = saveInter,
                                                          parameters = parameters[which(parameters$simulation == x@name),])})
   

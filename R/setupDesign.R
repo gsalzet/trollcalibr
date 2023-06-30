@@ -42,7 +42,7 @@ NULL
 #'  * quantileFn: fct. Quantile function to scale margin 
 #'  distribution of studied parameter ;
 #'  * type: chr. Type of parameter ('global'/ 'species'/ 
-#'  'climate'/ 'daily'/ 'covariate/ 'experiment').
+#'  'climate'/ 'daily'/ 'covariate/ 'experiment','qualitative').
 #'  
 #'  'forestInit' data.frame is formatted as followed:
 #'  * simulation: chr. Unique identifier for each studied plot 
@@ -79,7 +79,7 @@ NULL
 #'    \(x) {qunif(x,0.4,0.8)}, # CR_b
 #'    \(x) {qunif(x,0.8,1.2)},# Hmaxcor
 #'    \(x) {ceiling(qunif(x,0,14))}), #Habitat 
-#'    type = c("global","global","global","global","global","global","species", "covariate"))
+#'    type = c("global","global","global","global","global","global","species", "qualitative"))
 #'    
 #' ForestTest <- TROLLv3_sim@forest
 #' ForestInitTRUE <- rbind(ForestTest %>% mutate(simulation = "test"),
@@ -185,7 +185,7 @@ setupDesign <- function(name = NULL,
     stop("'paramsBounds' data.frame argument of 'setupDesign' is not formatted as detailled in 'setupDesign' help")
   }
   
-  types_variable <-  c("global", "species", "climate", "daily", "covariate", "experiment")
+  types_variable <-  c("global", "species", "climate", "daily", "covariate","qualitative" ,"experiment")
   
   if (!all(paramsBounds$type %in%  types_variable)) {
     stop("'paramsBounds' data.frame argument of 'setupDesign' is not formatted with correct 'type'")
@@ -212,6 +212,8 @@ setupDesign <- function(name = NULL,
   }
   
   
+  namesparamsinit <- paramsBounds$parameter
+  
   paramsBounds <- paramsBounds %>%  arrange(type,parameter)
   
   namesparams <- paramsBounds$parameter
@@ -222,7 +224,7 @@ setupDesign <- function(name = NULL,
     maxit <- 0
   }
   
-  if (nsim < 10*nparam) {
+  if (nsim < 10*nparam & echo) {
     message("'ninitsim' argument of 'setupDesign' is not >= 10*Parameters.")
   }
   
@@ -244,11 +246,68 @@ setupDesign <- function(name = NULL,
    
   }
   
+  Order <- do.call(c,lapply(1:length(namesparams),function(x){which(namesparams[x] == namesparamsinit) }))
+  
+  corrmat <- corrmat[Order,Order]
+  
   if (echo) {
     message("Computing maximin LHS")
   }
-  LHS <- maximinSLHD(t = max(length(forestID),1),m = nsim,k = nparam,itermax = max(100,maxit))
-  X <- LHS$StandDesign
+  
+  Nqualitative <- dim(paramsBounds[which(paramsBounds$type == "qualitative"),])[1]
+  
+  if (Nqualitative > 0 | !is.null(forestInit)) {
+    
+    if(!is.null(forestInit)){
+      paramsBounds <- rbind(tibble(parameter = c("forestInit"),
+                             quantileFn = c(
+                               function(x){floor(qunif(x,1,length(unique(forestInit$simulation))))}#"forestInit"
+                             ),
+                             type = c("qualitative")),paramsBounds)
+    }
+    
+    Nqualitative <- dim(paramsBounds[which(paramsBounds$type == "qualitative"),])[1]
+    
+    Quali <- paramsBounds[which(paramsBounds$type == "qualitative"),]
+    
+    Mat_quali <- expand.grid(lapply(1:Nqualitative,function(x){seq(Quali$quantileFn[x][[1]](0),
+                                                                   Quali$quantileFn[x][[1]](1),1)}))
+    
+    colnames(Mat_quali) <- Quali$parameter
+    
+    NcombiQuali <- dim(Mat_quali)[1]
+    
+    if (nparam - Nqualitative > 0) {
+      NotQuali <- paramsBounds[which(paramsBounds$type != "qualitative"),]
+      LHS <- maximinSLHD(t = max( NcombiQuali,1),m = floor(nsim/max(NcombiQuali,1)),k = max(dim(NotQuali)[1],1),itermax = max(100,maxit))
+      X <- LHS$StandDesign
+      Xquanti <- X[,2:(dim(NotQuali)[1]+1)]
+      colnames(Xquanti) <- NotQuali$parameter
+      
+      Xquali <- do.call(rbind, lapply(1:dim(X)[1],function(x){ 
+        Mat_quali[X[x,1],]}))
+      
+      Xquali <- do.call(cbind,lapply(1:Nqualitative,function(x){
+        Xquali[,x]/Quali$quantileFn[x][[1]](1)}))
+      
+      colnames(Xquali) <- Quali$parameter
+      
+      X <- cbind(Xquanti,Xquali) %>% as_tibble() %>% select(paramsBounds$parameter) %>% 
+        as.matrix()
+      
+    }else{
+      X <- do.call(cbind,lapply(1:Nqualitative,function(x){
+        Mat_quali[,x]/Quali$quantileFn[x][[1]](1) - 0.5/Quali$quantileFn[x][[1]](1)}))
+    }
+    
+    
+    paramsBounds$type[paramsBounds$type == "qualitative"] <- "covariate"
+  }else{
+    NcombiQuali <- 0
+    LHS <- maximinSLHD(t = 1,m = nsim,k = nparam,itermax = max(100,maxit))
+    X <- LHS$StandDesign
+  }
+
   
   if (!all(corrmat == diag(nparam))) {
     if (echo) {

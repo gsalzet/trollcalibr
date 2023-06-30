@@ -96,7 +96,7 @@ setMethod("addExp", "trolldae",function(dae,setupExp,...){
   
   params <- dae@params %>% 
     select(c("IDsim",(dae@boundaries %>% 
-                        filter(type %in% c("experiment","covariable")) %>% 
+                        filter(type %in% c("experiment","covariate")) %>% 
                         select(parameter))$parameter)) %>% mutate(ID = row_number()) 
   
   paramsTest <- params[1,]
@@ -108,7 +108,7 @@ setMethod("addExp", "trolldae",function(dae,setupExp,...){
   finalSummary <-NULL
   deltaTAll <- 0
   
-  for (ExpI in listexp) {
+  for (ExpI in listexp[2:(length(listexp))]) {
     
     if (is.null(tmpExp)) {
       tmpExp <- processExp(sim = test,

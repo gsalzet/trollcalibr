@@ -3,7 +3,8 @@
 ^\.github$
 ^codecov\.yml$
 ^cran-comments\.md$
-^.lintr
+^.lintr$
 ^LICENSE\.md$
 ^LICENSE$
 ^trollcalibr\.drawio$
+^\.rda$
